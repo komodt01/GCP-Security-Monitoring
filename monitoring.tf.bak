@@ -1,0 +1,39 @@
+resource "google_monitoring_alert_policy" "access_denied_alert" {
+  display_name = "Access Denied Alert"
+
+  combiner = "OR"
+
+  conditions {
+    display_name = "Access Denied Spike"
+
+    condition_threshold {
+      filter = "metric.type=\"logging.googleapis.com/user/access_denied_count\""
+      duration = "60s"
+      comparison = "COMPARISON_GT"
+      threshold_value = 0
+
+      aggregations {
+        alignment_period     = "60s"
+        per_series_aligner   = "ALIGN_RATE"
+        cross_series_reducer = "REDUCE_NONE"
+      }
+    }
+  }
+
+  notification_channels = []  # Leave empty for now, or add email/SMS later
+
+  alert_strategy {
+    notification_rate_limit {
+      period = "3600s"
+    }
+  }
+
+  documentation {
+    content = "This alert fires when access denied errors are detected on GCE instances."
+    mime_type = "text/markdown"
+  }
+
+  user_labels = {
+    environment = "dev"
+  }
+}
